@@ -24,7 +24,6 @@ MAIN
   TYPE object_array_t ARRAY[] OF java.lang.Object
   DEFINE sarr object_array_t
   LET sarr = object_array_t.create(1)
-  LET host="mail.strasbourg.4js.com"
   LET proto="smtp"
   LET port=587
   LET tls=1
@@ -51,7 +50,7 @@ MAIN
     GETOPT(to,"-t","--to","Recipient(s) comma separated")
     GETOPT(subject,"-s","--subject","Mail subject")
     GETOPT(bodyfile,"-b","--bodyfile","text filename for mail body")
-    GETOPT(host,"-h","--host","smtp host,default:mail.strasbourg.4js.com")
+    GETOPT(host,"-h","--host","smtp host")
     GETOPT(port,"-p","--port","smtp port, can be 25,465 or 587, default:587")
     GETOPT(user,"-u","--user","smtp username")
     GETOPT(pass,"-w","--password","smtp password (plaintext)")
@@ -68,6 +67,7 @@ MAIN
   IF num_args()=0 THEN
     CALL help()
   END IF
+  CALL checkNULL(host,"Host must be given via '--host'")
   CALL checkNULL(subject,"Subject must be given via '--subject'")
   CALL checkNULL(from,"From must be given via '--from'")
   CALL checkNULL(to,"To must be given via '--to'")
@@ -91,10 +91,12 @@ MAIN
     CALL props.put(String.format("mail.%s.auth",sarr),"true")
   END IF
   --CALL props.put(String.format("mail.%s.ssl.enable",sarr),"true")
-  IF host="mail.strasbourg.4js.com" THEN
+  { switch off identity trust
+  IF host="smptp.yourdomain.com" THEN
     CALL props.put(String.format("mail.%s.ssl.checkserveridentity",sarr),"false")
     CALL props.put(String.format("mail.%s.ssl.trust",sarr),"*")
   END IF
+  }
   LET sess=Session.getInstance(props,CAST(mynull as Authenticator)) --leo:there should be a more convenient way to pass a null pointer
   CALL sess.setDebug(TRUE)
   LET msg=MimeMessage.create(sess)
