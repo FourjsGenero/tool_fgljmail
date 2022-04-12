@@ -1,0 +1,12 @@
+#!/bin/bash
+realpath() {
+    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+}
+
+SCRIPT_NAME=`realpath $0`
+FGGLJMAILDIR=`dirname $SCRIPT_NAME` 
+#we recompile everything always: hence avoid version clashes
+make -C $FGGLJMAILDIR clean all > /dev/null
+export FGGLJMAILDIR
+export CLASSPATH=$FGGLJMAILDIR/javax.mail.jar:$FGGLJMAILDIR/activation.jar
+exec fglrun $FGGLJMAILDIR/fgljmail.42m "$@" 
